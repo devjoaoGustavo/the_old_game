@@ -86,6 +86,17 @@ func hasWinner(table [][]string) (result string, anyWinner bool) {
 	return "", false
 }
 
+func Move(table [][]string) bool {
+	for _, line := range table {
+		for _, cell := range line {
+			if cell == "| |" {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func SetMark(elem *string, user User) {
 	*elem = strings.Join(
 		append(append(strings.Split(*elem, "")[:1], string(user)), strings.Split(*elem, "")[2:]...),
@@ -129,7 +140,7 @@ func main() {
 			}
 			fmt.Println()
 		}
-		if winner, any = hasWinner(table); any {
+		if winner, any = hasWinner(table); any || !Move(table) {
 			break
 		}
 	}
