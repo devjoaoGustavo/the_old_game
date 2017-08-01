@@ -1,19 +1,47 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"log"
+	"os/exec"
+	"strings"
+)
 
-func odd(num int) bool {
-	if num%2 == 0 {
-		return false
+type User string
+
+func SwitchUser(user *User) {
+	if *user == "X" {
+		*user = "0"
+	} else {
+		*user = "X"
 	}
-	return true
+
 }
 
-func getMark(idx int) string {
-	if odd(idx) {
-		return "|X|"
+func Clear() {
+	cmd, err := exec.Command("clear").Output()
+	if err != nil {
+		log.Fatal(err)
 	}
-	return "|0|"
+	fmt.Printf(string(cmd))
+}
+
+func PrintFullTable() {
+	fullTable := [][]string{
+		{"|1|", "|2|", "|3|"},
+		{"|4|", "|5|", "|6|"},
+		{"|7|", "|8|", "|9|"},
+	}
+
+	fmt.Println()
+	for _, line := range fullTable {
+		fmt.Print("\t")
+		for _, elem := range line {
+			fmt.Print(elem)
+		}
+		fmt.Println()
+	}
+	fmt.Println()
 }
 
 func whereIsIt(mark string, table [][]string) map[int]bool {
@@ -58,6 +86,13 @@ func hasWinner(table [][]string) (result string, anyWinner bool) {
 	return "", false
 }
 
+func SetMark(elem *string, user User) {
+	*elem = strings.Join(
+		append(append(strings.Split(*elem, "")[:1], string(user)), strings.Split(*elem, "")[2:]...),
+		"",
+	)
+}
+
 func main() {
 	var hand int
 	var winner string
@@ -67,36 +102,25 @@ func main() {
 		{"| |", "| |", "| |"},
 		{"| |", "| |", "| |"},
 	}
-	fullTable := [][]string{
-		{"|1|", "|2|", "|3|"},
-		{"|4|", "|5|", "|6|"},
-		{"|7|", "|8|", "|9|"},
-	}
-
-	fmt.Println("* * * The old game * * *")
-	for _, line := range fullTable {
-		fmt.Print("\t")
-		for _, elem := range line {
-			fmt.Print(elem)
-		}
-		fmt.Println()
-	}
-	fmt.Println()
-	for x := 1; x <= 9; x++ {
-		mark := getMark(x)
-		fmt.Printf("This is the %s's time\n", mark)
+	Clear()
+	PrintFullTable()
+	user := User("X")
+	for {
+		fmt.Println("* * * The old game * * *")
+		fmt.Printf("This is the %s's time\n", user)
 		fmt.Println("[Press 1-9 number to mark a cell]")
 		fmt.Scanln(&hand)
-		item := 0
+		Clear()
+		round := 0
 		for i, line := range table {
+			fmt.Print("\t")
 			for j, cell := range line {
-				item++
-				if item == hand {
+				round++
+				if round == hand {
 					elem := &table[i][j]
 					if *elem == "| |" {
-						*elem = mark
-					} else {
-						x--
+						SetMark(elem, user)
+						SwitchUser(&user)
 					}
 					fmt.Print(*elem)
 				} else {
@@ -110,8 +134,8 @@ func main() {
 		}
 	}
 	if any {
-		fmt.Printf("And the Oscar goes to %s!\n", winner)
+		fmt.Printf("\n... and the Oscar goes to %s!\n", winner)
 	} else {
-		fmt.Println("There is no winner among to losers...")
+		fmt.Println("\n... there is no winner among to losers.")
 	}
 }
